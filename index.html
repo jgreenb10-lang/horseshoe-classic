@@ -99,9 +99,9 @@
   .hero{
     position:relative;
     background:linear-gradient(165deg, var(--green) 0%, var(--green-deep) 100%);
-    color:var(--cream); margin:0 -24px 0; padding:72px 24px 100px; overflow:hidden;
+    color:var(--cream); margin:0 -24px 0; padding:72px 0 100px; overflow:hidden;
   }
-  .hero-inner{ max-width:1100px; margin:0 auto; position:relative; z-index:2; }
+  .hero-inner{ max-width:1100px; margin:0 auto; padding:0 24px; position:relative; z-index:2; }
   .eyebrow{
     display:inline-flex; align-items:center; gap:8px;
     font-family:'IBM Plex Mono',monospace; font-size:0.74rem; letter-spacing:0.14em; text-transform:uppercase;
@@ -260,6 +260,11 @@
   .lb-side.a{ background:var(--green); }
   .lb-side.b{ background:var(--red); }
   .lb-side .lb-name{ font-family:'Playfair Display',serif; font-weight:600; font-size:1.08rem; margin-bottom:6px; }
+  input.lb-name-in{
+    display:block; font-family:'Playfair Display',serif; font-weight:600; font-size:1.08rem; margin-bottom:6px;
+    background:transparent; border:none; color:inherit; padding:2px 0; width:100%; max-width:220px;
+  }
+  input.lb-name-in:focus{ outline:1px solid rgba(255,255,255,0.6); outline-offset:2px; border-radius:3px; }
   .lb-side .lb-score{ font-family:'IBM Plex Mono',monospace; font-size:2.1rem; font-weight:600; }
   .lb-side .lb-tag{ font-family:'IBM Plex Mono',monospace; font-size:0.68rem; letter-spacing:0.08em; text-transform:uppercase; opacity:0.75; margin-top:4px; }
   .lb-side.leading{ box-shadow:inset 0 0 0 3px var(--gold); }
@@ -368,6 +373,23 @@
     .admin-grid{ grid-template-columns:1fr; }
     .bet-form{ grid-template-columns:1fr 1fr; }
     .brand span.long{ display:none; }
+  }
+  @media (max-width: 560px){
+    main{ padding:0 16px 70px; }
+    .hero{ margin:0 -16px 0; padding:48px 0 64px; }
+    .hero-inner{ padding:0 16px; }
+    .hero h1{ margin-bottom:16px; }
+    .hero p.sub{ font-size:1.02rem; margin-bottom:30px; }
+    .hero-facts{ gap:18px 26px; padding-top:22px; }
+    .fact{ min-width:calc(50% - 13px); }
+    section{ padding:44px 0 0; }
+    section h2{ font-size:1.55rem; }
+    .nav-top{ padding:10px 16px; }
+    .nav-tabs{ padding:0 16px; }
+    .format-card{ padding:20px; }
+    .modal{ padding:22px; }
+    .sc-toolbar{ flex-direction:column; align-items:stretch; }
+    .sc-toolbar .btn{ width:100%; }
   }
   @media (prefers-reduced-motion: reduce){ *{ animation-duration:0.001ms !important; scroll-behavior:auto !important; } }
 </style>
@@ -555,8 +577,8 @@
     </div>
 
     <div class="leaderboard" id="leaderboard">
-      <div class="lb-side a" id="lb-a"><div class="lb-name" id="lb-a-name">Team A</div><div class="lb-score" id="lb-a-score">E</div><div class="lb-tag">vs. par</div></div>
-      <div class="lb-side b" id="lb-b"><div class="lb-name" id="lb-b-name">Team B</div><div class="lb-score" id="lb-b-score">E</div><div class="lb-tag">vs. par</div></div>
+      <div class="lb-side a" id="lb-a"><input type="text" class="lb-name-in" id="lb-a-name" value="Team A" maxlength="24"><div class="lb-score" id="lb-a-score">E</div><div class="lb-tag">vs. par</div></div>
+      <div class="lb-side b" id="lb-b"><input type="text" class="lb-name-in" id="lb-b-name" value="Team B" maxlength="24"><div class="lb-score" id="lb-b-score">E</div><div class="lb-tag">vs. par</div></div>
     </div>
 
     <div class="sc-list" id="sc-list"></div>
@@ -1063,6 +1085,15 @@
     const v = e.target.value;
     clearTimeout(nameDebounce); nameDebounce = setTimeout(()=> persistDraft(d=>{ d.teamBName = v; }), 400);
   });
+  let scNameDebounce;
+  document.getElementById('lb-a-name').addEventListener('input', e=>{
+    const v = e.target.value;
+    clearTimeout(scNameDebounce); scNameDebounce = setTimeout(()=> persistDraft(d=>{ d.teamAName = v; }), 400);
+  });
+  document.getElementById('lb-b-name').addEventListener('input', e=>{
+    const v = e.target.value;
+    clearTimeout(scNameDebounce); scNameDebounce = setTimeout(()=> persistDraft(d=>{ d.teamBName = v; }), 400);
+  });
   document.getElementById('snake-toggle').addEventListener('change', e=>{
     const v = e.target.checked;
     persistDraft(d=>{ d.snakeMode = v; });
@@ -1089,7 +1120,7 @@
       }
     };
   }
-  function sumScores(arr){ return arr.reduce((s,v)=> s + (typeof v==='number' ? v : 0), 0); }
+  function sumScores(arr){ return (arr||[]).reduce((s,v)=> s + (typeof v==='number' ? v : 0), 0); }
 
   function usersOptionsHtml(selectedUid){
     let html = `<option value="" ${!selectedUid?'selected':''}>— guest —</option>`;
@@ -1106,7 +1137,7 @@
       Object.values(card.players||{}).forEach(pl=>{
         if(!pl.team) return;
         (card.pars||[]).forEach((par,h)=>{
-          const sc = pl.scores[h];
+          const sc = (pl.scores||[])[h];
           if(typeof sc === 'number'){
             if(pl.team==='A'){ aDiff += (sc-par); anyA=true; }
             else if(pl.team==='B'){ bDiff += (sc-par); anyB=true; }
@@ -1115,8 +1146,9 @@
       });
     });
     const fmt = (v,has) => !has ? 'E' : (v===0?'E':(v>0?'+'+v:String(v)));
-    document.getElementById('lb-a-name').textContent = d.teamAName || 'Team A';
-    document.getElementById('lb-b-name').textContent = d.teamBName || 'Team B';
+    const lbAName = document.getElementById('lb-a-name'), lbBName = document.getElementById('lb-b-name');
+    if(document.activeElement !== lbAName) lbAName.value = d.teamAName || 'Team A';
+    if(document.activeElement !== lbBName) lbBName.value = d.teamBName || 'Team B';
     document.getElementById('lb-a-score').textContent = fmt(aDiff, anyA);
     document.getElementById('lb-b-score').textContent = fmt(bDiff, anyB);
     const aSide = document.getElementById('lb-a'), bSide = document.getElementById('lb-b');
@@ -1168,7 +1200,7 @@
             </select>
           </td>`;
         for(let h=0; h<HOLES; h++){
-          const v = pl.scores[h];
+          const v = (pl.scores||[])[h];
           html += `<td><input class="score-in hole-score" type="number" min="1" max="15" data-hole="${h}" value="${v==null?'':v}"></td>`;
         }
         html += `<td class="total-cell">${total || '—'}</td></tr>`;
@@ -1275,6 +1307,7 @@
     if(e.target.classList.contains('hole-score')){
       const hole = parseInt(e.target.dataset.hole,10);
       const val = parseInt(e.target.value,10);
+      if(!Array.isArray(player.scores)) player.scores = Array(HOLES).fill(null);
       player.scores[hole] = isNaN(val) ? null : val;
       recalcAndSave(cardEl, card, sc);
       return;
@@ -1310,7 +1343,7 @@
         Object.values(card.players||{}).forEach(pl=>{
           if(!pl.team) return;
           (card.pars||[]).forEach((par,h)=>{
-            const sc = pl.scores[h];
+            const sc = (pl.scores||[])[h];
             if(typeof sc === 'number'){
               if(pl.team==='A'){ aDiff += (sc-par); anyA=true; }
               else if(pl.team==='B'){ bDiff += (sc-par); anyB=true; }
@@ -1334,7 +1367,7 @@
         Object.values(card.players||{}).forEach(pl=>{
           if(!pl.uid) return;
           let diff=0, any=false;
-          (card.pars||[]).forEach((par,h)=>{ const sc=pl.scores[h]; if(typeof sc==='number'){ diff+=(sc-par); any=true; } });
+          (card.pars||[]).forEach((par,h)=>{ const sc=(pl.scores||[])[h]; if(typeof sc==='number'){ diff+=(sc-par); any=true; } });
           if(!any) return;
           if(!stats[pl.uid]) stats[pl.uid] = {rounds:0, sumDiff:0, best:null, wins:0, years:new Set()};
           stats[pl.uid].rounds++;

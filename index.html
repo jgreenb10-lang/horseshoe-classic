@@ -786,6 +786,14 @@
     <div class="lines-list" id="lines-list"></div>
     <div class="empty-note" id="lines-empty">No lines open yet — be the house and set one.</div>
 
+    <div class="section-head" style="margin-top:16px;">
+      <div class="kicker">Running Total</div>
+      <h2 style="font-size:1.4rem;">Lines ledger</h2>
+      <p class="lede">Net of every settled line, bettor vs. house, across every year.</p>
+    </div>
+    <div class="ledger-grid" id="lines-ledger-grid"></div>
+    <div class="empty-note" id="lines-ledger-empty">No settled lines yet.</div>
+
     <div class="section-head" style="margin-top:40px;">
       <div class="kicker">Friendly Wagers — <span id="bets-year-label"></span></div>
       <h2>Bets</h2>
@@ -1992,6 +2000,35 @@
           <button type="button" class="btn btn-sm btn-ghost line-settle-btn" data-id="${id}" data-outcome="no">No won</button>
         </div>` : ''}
       </div>`;
+    }).join('');
+    renderLinesLedger();
+  }
+
+  function renderLinesLedger(){
+    const net = {}; // "bettorUid|houseUid" -> amount the house owes the bettor (negative = bettor owes house)
+    Object.keys(allSeasons).forEach(year=>{
+      const yearLines = (allSeasons[year] && allSeasons[year].lines) || {};
+      Object.values(yearLines).forEach(l=>{
+        if(l.status !== 'settled' || !l.houseUid) return;
+        Object.values(l.wagers||{}).forEach(w=>{
+          if(!w.bettorUid || !w.result) return;
+          const key = w.bettorUid + '|' + l.houseUid;
+          const delta = w.result === 'win' ? Number(w.payout||0) : -Number(w.amount||0);
+          net[key] = (net[key]||0) + delta;
+        });
+      });
+    });
+    const grid = document.getElementById('lines-ledger-grid');
+    const rows = Object.entries(net).filter(([,v])=> Math.abs(v) > 0.001);
+    document.getElementById('lines-ledger-empty').style.display = rows.length ? 'none' : 'block';
+    grid.innerHTML = rows.map(([key,v])=>{
+      const [bettorUid, houseUid] = key.split('|');
+      const owes = v > 0 ? houseUid : bettorUid;
+      const owed = v > 0 ? bettorUid : houseUid;
+      const amt = Math.abs(v);
+      const nameOwes = (allUsers[owes] && allUsers[owes].name) || 'Someone';
+      const nameOwed = (allUsers[owed] && allUsers[owed].name) || 'Someone';
+      return `<div class="ledger-row"><div class="owe-line">${esc(nameOwes)} owes ${esc(nameOwed)}</div><div class="owe-amt">$${amt.toFixed(2)}</div></div>`;
     }).join('');
   }
 

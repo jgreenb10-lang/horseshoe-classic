@@ -923,6 +923,7 @@
     console.warn('Firebase not configured — running in local-only mode.', e);
     markOffline('not configured — see README');
   }
+  function isAdmin(){ return !!(currentUser && adminEmails.includes(currentUser.email)); }
 
   function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
   function escapeAttr(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
@@ -1877,6 +1878,7 @@
     const list = Object.keys(bets).map(id=>({id, ...bets[id]}));
     const listEl = document.getElementById('bet-list');
     document.getElementById('bet-list-empty').style.display = list.length ? 'none' : 'block';
+    const admin = isAdmin();
     listEl.innerHTML = list.sort((a,b)=>(b.ts||0)-(a.ts||0)).map(b=>`
       <div class="bet-row ${b.settled?'settled':''}" data-id="${b.id}">
         <div>
@@ -1888,6 +1890,7 @@
           <label style="font-size:0.78rem; display:flex; align-items:center; gap:5px; cursor:pointer;">
             <input type="checkbox" class="bet-settle-cb" ${b.settled?'checked':''}> Settled
           </label>
+          ${admin ? `<button type="button" class="btn btn-sm btn-ghost bet-delete">Delete</button>` : ''}
         </div>
       </div>
     `).join('');
@@ -1959,6 +1962,22 @@
     }
   });
 
+  document.getElementById('bet-list').addEventListener('click', e=>{
+    const delBtn = e.target.closest('.bet-delete');
+    if(!delBtn || !isAdmin()) return;
+    const row = e.target.closest('.bet-row');
+    const id = row.dataset.id;
+    if(!confirm('Delete this bet? This cannot be undone.')) return;
+    if(liveReady){
+      db.ref('seasons/'+currentYear+'/bets/'+id).remove();
+    } else {
+      if(allSeasons[currentYear] && allSeasons[currentYear].bets){
+        delete allSeasons[currentYear].bets[id];
+      }
+      renderBets();
+    }
+  });
+
   /* ================= LINES (SPORTSBOOK) ================= */
   function fmtOdds(v){
     const n = Number(v);
@@ -1973,6 +1992,7 @@
     const ids = Object.keys(linesObj).sort((a,b)=>(linesObj[b].ts||0)-(linesObj[a].ts||0));
     const listEl = document.getElementById('lines-list');
     document.getElementById('lines-empty').style.display = ids.length ? 'none' : 'block';
+    const admin = isAdmin();
     listEl.innerHTML = ids.map(id=>{
       const l = linesObj[id];
       const wagers = Object.values(l.wagers||{});
@@ -1999,6 +2019,7 @@
           <button type="button" class="btn btn-sm btn-ghost line-settle-btn" data-id="${id}" data-outcome="yes">Yes won</button>
           <button type="button" class="btn btn-sm btn-ghost line-settle-btn" data-id="${id}" data-outcome="no">No won</button>
         </div>` : ''}
+        ${admin ? `<button type="button" class="btn btn-sm btn-ghost line-delete" data-id="${id}" style="align-self:flex-start;">Delete line</button>` : ''}
       </div>`;
     }).join('');
     renderLinesLedger();
@@ -2083,6 +2104,7 @@
   document.getElementById('lines-list').addEventListener('click', e=>{
     const oddsBtn = e.target.closest('.line-odds-btn');
     const settleBtn = e.target.closest('.line-settle-btn');
+    const deleteBtn = e.target.closest('.line-delete');
     if(oddsBtn && !oddsBtn.disabled){
       placeWager(oddsBtn.dataset.id, oddsBtn.dataset.side);
       return;
@@ -2091,6 +2113,19 @@
       const outcome = settleBtn.dataset.outcome;
       if(!confirm('Settle this line — ' + (outcome==='yes'?'Yes':'No') + ' won? This locks it in and pays out every bet.')) return;
       settleLine(settleBtn.dataset.id, outcome);
+      return;
+    }
+    if(deleteBtn && isAdmin()){
+      if(!confirm('Delete this line and all its wagers? This cannot be undone.')) return;
+      const id = deleteBtn.dataset.id;
+      if(liveReady){
+        db.ref('seasons/'+currentYear+'/lines/'+id).remove();
+      } else {
+        if(allSeasons[currentYear] && allSeasons[currentYear].lines){
+          delete allSeasons[currentYear].lines[id];
+        }
+        renderLines();
+      }
     }
   });
 

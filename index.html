@@ -331,6 +331,14 @@
   .rate-btn{ background:none; border:none; padding:1px; cursor:pointer; font-size:1.05rem; line-height:1; color:var(--line); }
   .rate-btn.filled{ color:var(--gold); }
   .rate-btn:hover{ color:var(--gold-soft); }
+  .cb-stats-list{ display:flex; flex-direction:column; gap:8px; }
+  .cb-stat-row{ display:flex; align-items:center; justify-content:space-between; background:var(--cream); border:1px solid var(--line); border-radius:8px; padding:8px 12px; }
+  .cb-stat-label{ font-size:0.85rem; font-weight:600; }
+  .cb-stat-controls{ display:flex; align-items:center; gap:10px; }
+  .cb-stat-controls button{ width:26px; height:26px; border-radius:50%; border:1px solid var(--line); background:#fff; cursor:pointer; font-weight:700; font-family:'IBM Plex Mono',monospace; line-height:1; padding:0; }
+  .cb-stat-controls button:hover{ background:var(--green); color:#fff; border-color:var(--green); }
+  .cb-stat-count{ font-family:'IBM Plex Mono',monospace; font-weight:700; min-width:20px; text-align:center; }
+  .cb-add-stat{ align-self:flex-start; margin-top:2px; }
 
   /* ---------- CHAT ---------- */
   .chat-shell{ display:flex; flex-direction:column; height:520px; background:var(--paper); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; }
@@ -359,6 +367,26 @@
   .ledger-row .owe-line{ font-size:0.9rem; }
   .ledger-row .owe-amt{ font-family:'IBM Plex Mono',monospace; font-weight:700; color:var(--red); }
 
+  /* ---------- LINES (SPORTSBOOK) ---------- */
+  .lines-list{ display:flex; flex-direction:column; gap:16px; margin-top:20px; margin-bottom:20px; }
+  .line-card{ padding:18px 20px; display:flex; flex-direction:column; gap:10px; }
+  .line-q{ font-family:'Playfair Display',serif; font-weight:600; font-size:1.05rem; }
+  .line-house{ font-size:0.76rem; color:var(--muted); font-family:'IBM Plex Mono',monospace; }
+  .line-odds-row{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .line-odds-btn{
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+    background:var(--cream); border:1px solid var(--line); border-radius:8px; padding:12px 14px;
+    font-family:'Inter',sans-serif; font-weight:700; font-size:0.9rem; cursor:pointer; transition:background .15s, border-color .15s;
+  }
+  .line-odds-btn.yes:hover:not(:disabled){ background:rgba(11,77,51,0.1); border-color:var(--green); }
+  .line-odds-btn.no:hover:not(:disabled){ background:rgba(200,16,46,0.08); border-color:var(--red); }
+  .line-odds-btn:disabled{ opacity:0.45; cursor:not-allowed; }
+  .line-odds-btn .odds{ font-family:'IBM Plex Mono',monospace; font-weight:700; color:var(--green); }
+  .line-wagers-list{ display:flex; flex-direction:column; gap:6px; }
+  .line-wager-row{ display:flex; justify-content:space-between; font-size:0.8rem; color:var(--muted); padding:4px 2px; border-bottom:1px dashed var(--line); }
+  .line-wager-row:last-child{ border-bottom:none; }
+  .line-settle-row{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding-top:8px; border-top:1px solid var(--line); margin-top:4px; }
+
   /* ---------- ADMIN ---------- */
   .admin-grid{ display:grid; grid-template-columns:280px 1fr; gap:22px; }
   .admin-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px; }
@@ -376,6 +404,9 @@
   .photo-preview{ width:64px; height:64px; border-radius:50%; object-fit:cover; background:var(--cream); border:1px solid var(--line); flex-shrink:0; }
   .photo-picker-actions{ display:flex; flex-direction:column; gap:6px; }
   .photo-remove-btn{ background:none; border:none; color:var(--red); font-size:0.76rem; text-decoration:underline; cursor:pointer; padding:0; text-align:left; }
+  .role-toggle{ display:flex; gap:18px; margin-bottom:4px; }
+  .role-toggle label{ display:flex !important; align-items:center; gap:6px; font-size:0.88rem; font-weight:500; color:var(--ink); margin:0 !important; cursor:pointer; }
+  .role-toggle input{ width:auto; }
 
   .confetti-piece{ position:fixed; top:-12px; width:9px; height:14px; z-index:200; pointer-events:none; animation:confetti-fall linear forwards; }
   @keyframes confetti-fall{ to{ transform:translateY(105vh) rotate(540deg); opacity:0.9; } }
@@ -434,6 +465,7 @@
     <button class="tab-btn" data-page="scorecards" role="tab" aria-selected="false">Scorecards</button>
     <button class="tab-btn" data-page="leaderboard" role="tab" aria-selected="false">Leaderboard</button>
     <button class="tab-btn" data-page="players" role="tab" aria-selected="false">Players</button>
+    <button class="tab-btn" data-page="cartboys" role="tab" aria-selected="false">Cart Boys</button>
     <button class="tab-btn" data-page="chat" role="tab" aria-selected="false">Draft Chat</button>
     <button class="tab-btn" data-page="bets" role="tab" aria-selected="false">Bets</button>
     <button class="tab-btn hidden" id="admin-tab-btn" data-page="admin" role="tab" aria-selected="false" style="display:none;">Admin</button>
@@ -470,6 +502,11 @@
     <button class="modal-close" id="profile-close-btn">✕</button>
     <h3>Edit My Profile</h3>
     <p class="hint">This is what shows on your player card.</p>
+    <label>I am a</label>
+    <div class="role-toggle">
+      <label><input type="radio" name="profile-role" value="golfer" checked> Golfer</label>
+      <label><input type="radio" name="profile-role" value="cartboy"> Cart Boy</label>
+    </div>
     <label>Profile picture</label>
     <div class="photo-picker">
       <img class="photo-preview" id="profile-photo-preview" alt="">
@@ -497,6 +534,24 @@
     <label for="profile-fact">Fun fact</label>
     <input type="text" id="profile-fact" placeholder="Once made a hole-in-one on 14.">
     <div class="modal-actions"><button class="btn btn-primary" id="profile-save-btn">Save changes</button></div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="line-modal">
+  <div class="modal modal-wrap">
+    <button class="modal-close" id="line-close-btn">✕</button>
+    <h3>New Line</h3>
+    <p class="hint">You set the line and house the action — everyone else bets yes or no against you.</p>
+    <label for="line-question">The line</label>
+    <input type="text" id="line-question" placeholder="Will Wang beat Miller by 5.5 strokes?">
+    <div class="two-col">
+      <div><label for="line-odds-yes">Yes odds</label>
+      <input type="text" id="line-odds-yes" placeholder="+115"></div>
+      <div><label for="line-odds-no">No odds</label>
+      <input type="text" id="line-odds-no" placeholder="-140"></div>
+    </div>
+    <div class="modal-error" id="line-error"></div>
+    <div class="modal-actions"><button class="btn btn-primary" id="line-save-btn">Open the line</button></div>
   </div>
 </div>
 
@@ -678,6 +733,19 @@
   </main>
 </div>
 
+<!-- ================= CART BOYS ================= -->
+<div class="page" id="page-cartboys">
+  <main style="padding-top:40px;">
+    <div class="section-head">
+      <div class="kicker">On Wheels — <span id="cartboys-year-label"></span></div>
+      <h2>Cart Boys</h2>
+      <p class="lede">The unsung heroes keeping the drinks and vibes flowing. Log the tallies as the round goes — tap + or − to update.</p>
+    </div>
+    <div class="players-grid" id="cartboys-grid"></div>
+    <div class="empty-note" id="cartboys-empty">No Cart Boys yet — mark yourself as one in Edit My Profile.</div>
+  </main>
+</div>
+
 <!-- ================= CHAT ================= -->
 <div class="page" id="page-chat">
   <main style="padding-top:40px;">
@@ -703,7 +771,22 @@
 <!-- ================= BETS ================= -->
 <div class="page" id="page-bets">
   <main style="padding-top:40px;">
-    <div class="section-head">
+    <div class="sc-toolbar">
+      <div class="section-head" style="margin-bottom:0;">
+        <div class="kicker">The Book — <span id="lines-year-label"></span></div>
+        <h2>Lines</h2>
+        <p class="lede">Set a line, house the action yourself, and let the group bet yes or no against you at your odds.</p>
+      </div>
+      <button class="btn btn-gold" id="new-line-btn" style="display:none;">+ New Line</button>
+    </div>
+    <div class="signin-gate" id="lines-gate" style="display:none;">
+      <p>Sign in to open a line or place a bet.</p>
+      <button class="btn btn-gold" id="lines-signin-btn">Sign In</button>
+    </div>
+    <div class="lines-list" id="lines-list"></div>
+    <div class="empty-note" id="lines-empty">No lines open yet — be the house and set one.</div>
+
+    <div class="section-head" style="margin-top:40px;">
       <div class="kicker">Friendly Wagers — <span id="bets-year-label"></span></div>
       <h2>Bets</h2>
       <p class="lede">Log a side bet, mark it settled once it's paid up. The all-time ledger below tracks who owes who across every year.</p>
@@ -748,6 +831,11 @@
       <ul class="admin-list" id="admin-player-list"></ul>
       <div class="card admin-form-card" id="admin-form-card" style="display:none;">
         <h3 id="admin-form-name" style="margin:0;">Player</h3>
+        <label>Role</label>
+        <div class="role-toggle">
+          <label><input type="radio" name="admin-role" value="golfer" checked> Golfer</label>
+          <label><input type="radio" name="admin-role" value="cartboy"> Cart Boy</label>
+        </div>
         <label>Profile picture</label>
         <div class="photo-picker">
           <img class="photo-preview" id="admin-photo-preview" alt="">
@@ -851,11 +939,15 @@
       draft: Object.assign({players:{}, teamAName:'Team A', teamBName:'Team B', teamA:[], teamB:[], snakeMode:false}, s.draft||{}),
       scorecards: s.scorecards || {},
       chat: s.chat || {},
-      bets: s.bets || {}
+      bets: s.bets || {},
+      cartboys: s.cartboys || {},
+      lines: s.lines || {}
     };
   }
   function draft(){ return seasonOf(currentYear).draft; }
   function scorecards(){ return seasonOf(currentYear).scorecards; }
+  function cartboys(){ return seasonOf(currentYear).cartboys; }
+  function lines(){ return seasonOf(currentYear).lines; }
 
   function dbSet(path, value){ if(liveReady) db.ref(path).set(value); }
   function dbPush(path, value){ if(liveReady) return db.ref(path).push(value); return null; }
@@ -892,12 +984,16 @@
     document.getElementById('sc-year-label').textContent = currentYear;
     document.getElementById('chat-year-label').textContent = currentYear;
     document.getElementById('bets-year-label').textContent = currentYear;
+    document.getElementById('cartboys-year-label').textContent = currentYear;
+    document.getElementById('lines-year-label').textContent = currentYear;
     renderDraft();
     renderScorecards();
     renderLeaderboardTab();
     renderPlayersTab();
+    renderCartBoys();
     renderChat();
     renderBets();
+    renderLines();
   }
 
   /* ================= AUTH ================= */
@@ -937,7 +1033,7 @@
         if(!name){ errEl.textContent = 'Enter your name.'; errEl.style.display='block'; return; }
         const cred = await auth.createUserWithEmailAndPassword(email, password);
         await db.ref('users/'+cred.user.uid).set({
-          name, email, bio:'', handicap:'', homeCourse:'', funFact:'', height:'', weight:'', photoUrl:'',
+          name, email, bio:'', handicap:'', homeCourse:'', funFact:'', height:'', weight:'', photoUrl:'', role:'golfer',
           photoEmoji: name.trim().charAt(0).toUpperCase() || '⛳'
         });
       } else {
@@ -974,6 +1070,8 @@
     document.getElementById('bets-gate').style.display = currentUser ? 'none' : 'block';
     document.getElementById('bets-signed-in').style.display = currentUser ? 'block' : 'none';
     document.getElementById('edit-profile-btn').style.display = currentUser ? 'inline-block' : 'none';
+    document.getElementById('lines-gate').style.display = currentUser ? 'none' : 'block';
+    document.getElementById('new-line-btn').style.display = currentUser ? 'inline-block' : 'none';
   }
 
   if(liveReady){
@@ -981,7 +1079,9 @@
       currentUser = user;
       renderAuthBox();
       renderPlayersTab();
+      renderCartBoys();
       renderBets();
+      renderLines();
     });
   } else {
     renderAuthBox();
@@ -1504,11 +1604,16 @@
     for(let i=1;i<=5;i++) html += `<span class="star ${i<=rounded?'filled':''}">★</span>`;
     return html;
   }
+  function avatarMarkup(p, initial){
+    return p.photoUrl
+      ? `<img class="player-av-img" src="${esc(p.photoUrl)}" alt="">`
+      : `<div class="player-av">${esc(p.photoEmoji || initial)}</div>`;
+  }
 
   function renderPlayersTab(){
     const {stats} = computeCareerStats();
     const grid = document.getElementById('players-grid');
-    const uids = Object.keys(allUsers);
+    const uids = Object.keys(allUsers).filter(u => allUsers[u].role !== 'cartboy');
     document.getElementById('players-empty').style.display = uids.length ? 'none' : 'block';
     grid.innerHTML = uids.map(u=>{
       const p = allUsers[u];
@@ -1518,12 +1623,9 @@
       const ratingCount = Object.keys(p.ratings||{}).length;
       const isMe = currentUser && u === currentUser.uid;
       const myRating = (currentUser && p.ratings && p.ratings[currentUser.uid]) || 0;
-      const avatarHtml = p.photoUrl
-        ? `<img class="player-av-img" src="${esc(p.photoUrl)}" alt="">`
-        : `<div class="player-av">${esc(p.photoEmoji || initial)}</div>`;
       return `<div class="card player-card">
         <div class="player-top">
-          ${avatarHtml}
+          ${avatarMarkup(p, initial)}
           <div>
             <div class="player-name-h">${esc(p.name)}</div>
             ${p.handicap ? `<div class="player-hcap">Handicap ${esc(p.handicap)}</div>` : ''}
@@ -1567,6 +1669,76 @@
     }
   });
 
+  /* ================= CART BOYS ================= */
+  const DEFAULT_CARTBOY_STATS = { drinks: {label:'Drinks', count:0}, putts: {label:'Putts Made', count:0} };
+  function renderCartBoys(){
+    const grid = document.getElementById('cartboys-grid');
+    const uids = Object.keys(allUsers).filter(u => allUsers[u].role === 'cartboy');
+    document.getElementById('cartboys-empty').style.display = uids.length ? 'none' : 'block';
+    const cbData = cartboys();
+    grid.innerHTML = uids.map(u=>{
+      const p = allUsers[u];
+      const initial = (p.name||'?').trim().charAt(0).toUpperCase();
+      const statsObj = (cbData[u] && cbData[u].stats) || DEFAULT_CARTBOY_STATS;
+      const statRows = Object.keys(statsObj).map(sid=>{
+        const st = statsObj[sid];
+        return `<div class="cb-stat-row">
+          <span class="cb-stat-label">${esc(st.label)}</span>
+          <div class="cb-stat-controls">
+            <button type="button" class="cb-minus" data-uid="${u}" data-stat="${sid}">−</button>
+            <span class="cb-stat-count">${st.count||0}</span>
+            <button type="button" class="cb-plus" data-uid="${u}" data-stat="${sid}">+</button>
+          </div>
+        </div>`;
+      }).join('');
+      return `<div class="card player-card">
+        <div class="player-top">
+          ${avatarMarkup(p, initial)}
+          <div><div class="player-name-h">${esc(p.name)}</div></div>
+        </div>
+        <div class="cb-stats-list">${statRows}</div>
+        <button type="button" class="btn btn-ghost btn-sm cb-add-stat" data-uid="${u}">+ Add stat</button>
+      </div>`;
+    }).join('');
+  }
+
+  function mutateCartboyStats(uid_, mutator){
+    const cbData = cartboys();
+    const existing = (cbData[uid_] && cbData[uid_].stats) || DEFAULT_CARTBOY_STATS;
+    const stats = {};
+    Object.keys(existing).forEach(k=>{ stats[k] = Object.assign({}, existing[k]); });
+    mutator(stats);
+    dbSet('seasons/'+currentYear+'/cartboys/'+uid_+'/stats', stats);
+    if(!allSeasons[currentYear]) allSeasons[currentYear] = {};
+    if(!allSeasons[currentYear].cartboys) allSeasons[currentYear].cartboys = {};
+    allSeasons[currentYear].cartboys[uid_] = {stats};
+    renderCartBoys();
+  }
+
+  document.getElementById('cartboys-grid').addEventListener('click', e=>{
+    const plusBtn = e.target.closest('.cb-plus');
+    const minusBtn = e.target.closest('.cb-minus');
+    const addBtn = e.target.closest('.cb-add-stat');
+    if(plusBtn || minusBtn){
+      const btn = plusBtn || minusBtn;
+      const targetUid = btn.dataset.uid, statId = btn.dataset.stat;
+      const delta = plusBtn ? 1 : -1;
+      mutateCartboyStats(targetUid, stats=>{
+        const cur = stats[statId] || {label: statId, count:0};
+        stats[statId] = {label: cur.label, count: Math.max(0, (cur.count||0) + delta)};
+      });
+      return;
+    }
+    if(addBtn){
+      const targetUid = addBtn.dataset.uid;
+      const label = prompt('What do you want to track?');
+      if(!label || !label.trim()) return;
+      mutateCartboyStats(targetUid, stats=>{
+        stats['stat_'+uid()] = {label: label.trim(), count:0};
+      });
+    }
+  });
+
   /* ================= PHOTO UPLOAD HELPERS ================= */
   const BLANK_AVATAR = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="#E1DCC9"/></svg>');
   function resizeImageFile(file, size){
@@ -1596,6 +1768,9 @@
   function openProfileModal(){
     if(!currentUser) return;
     const p = allUsers[currentUser.uid] || {};
+    const roleVal = p.role === 'cartboy' ? 'cartboy' : 'golfer';
+    const roleInput = document.querySelector(`input[name="profile-role"][value="${roleVal}"]`);
+    if(roleInput) roleInput.checked = true;
     document.getElementById('profile-handicap').value = p.handicap || '';
     document.getElementById('profile-home').value = p.homeCourse || '';
     document.getElementById('profile-emoji').value = p.photoEmoji || '';
@@ -1623,7 +1798,9 @@
   });
   document.getElementById('profile-save-btn').addEventListener('click', ()=>{
     if(!currentUser) return;
+    const roleChecked = document.querySelector('input[name="profile-role"]:checked');
     const updates = {
+      role: roleChecked ? roleChecked.value : 'golfer',
       handicap: document.getElementById('profile-handicap').value.trim(),
       homeCourse: document.getElementById('profile-home').value.trim(),
       photoEmoji: document.getElementById('profile-emoji').value.trim(),
@@ -1638,6 +1815,7 @@
     } else {
       Object.assign(allUsers[currentUser.uid], updates);
       renderPlayersTab();
+      renderCartBoys();
     }
     profileModal.classList.remove('show');
   });
@@ -1773,6 +1951,151 @@
     }
   });
 
+  /* ================= LINES (SPORTSBOOK) ================= */
+  function fmtOdds(v){
+    const n = Number(v);
+    if(!n || isNaN(n)) return '—';
+    return n > 0 ? '+'+n : String(n);
+  }
+  function payoutFor(amount, odds){
+    return odds > 0 ? amount * (odds/100) : amount * (100/Math.abs(odds));
+  }
+  function renderLines(){
+    const linesObj = lines();
+    const ids = Object.keys(linesObj).sort((a,b)=>(linesObj[b].ts||0)-(linesObj[a].ts||0));
+    const listEl = document.getElementById('lines-list');
+    document.getElementById('lines-empty').style.display = ids.length ? 'none' : 'block';
+    listEl.innerHTML = ids.map(id=>{
+      const l = linesObj[id];
+      const wagers = Object.values(l.wagers||{});
+      const isHouse = currentUser && l.houseUid === currentUser.uid;
+      const isOpen = l.status !== 'settled';
+      const wagersHtml = wagers.length
+        ? `<div class="line-wagers-list">` + wagers.map(w=>`
+          <div class="line-wager-row">
+            <span>${esc(w.bettorName)} — ${w.side==='yes'?'Yes':'No'} @ ${fmtOdds(w.oddsAtBet)}</span>
+            <span class="mono">$${Number(w.amount).toFixed(2)}${w.result ? (w.result==='win' ? ' · won $'+Number(w.payout||0).toFixed(2) : ' · lost') : ''}</span>
+          </div>`).join('') + `</div>`
+        : `<div class="empty-note" style="padding:4px 2px;">No action yet.</div>`;
+      return `<div class="card line-card" data-id="${id}">
+        <div class="line-q">${esc(l.question)}</div>
+        <div class="line-house">House: ${esc(l.houseName)}${l.status==='settled' ? ' · Settled — ' + (l.outcome==='yes'?'Yes':'No') + ' won' : ''}</div>
+        <div class="line-odds-row">
+          <button type="button" class="line-odds-btn yes" data-id="${id}" data-side="yes" ${!isOpen?'disabled':''}>Yes<span class="odds">${fmtOdds(l.oddsYes)}</span></button>
+          <button type="button" class="line-odds-btn no" data-id="${id}" data-side="no" ${!isOpen?'disabled':''}>No<span class="odds">${fmtOdds(l.oddsNo)}</span></button>
+        </div>
+        ${wagersHtml}
+        ${isHouse && isOpen ? `
+        <div class="line-settle-row">
+          <span class="rating-label">Settle:</span>
+          <button type="button" class="btn btn-sm btn-ghost line-settle-btn" data-id="${id}" data-outcome="yes">Yes won</button>
+          <button type="button" class="btn btn-sm btn-ghost line-settle-btn" data-id="${id}" data-outcome="no">No won</button>
+        </div>` : ''}
+      </div>`;
+    }).join('');
+  }
+
+  function placeWager(lineId, side){
+    if(!currentUser) return;
+    const linesObj = lines();
+    const l = linesObj[lineId];
+    if(!l || l.status === 'settled') return;
+    if(l.houseUid === currentUser.uid){ alert("You're the house on this line — you can't bet against yourself."); return; }
+    const amountStr = prompt('Stake amount ($):', '20');
+    if(amountStr == null) return;
+    const amount = Number(amountStr);
+    if(!amount || amount <= 0){ alert('Enter a valid dollar amount.'); return; }
+    const odds = side === 'yes' ? l.oddsYes : l.oddsNo;
+    const wager = {
+      bettorUid: currentUser.uid,
+      bettorName: (allUsers[currentUser.uid] && allUsers[currentUser.uid].name) || currentUser.email,
+      side, amount, oddsAtBet: odds, result: null, payout: 0, ts: Date.now()
+    };
+    if(liveReady){
+      db.ref('seasons/'+currentYear+'/lines/'+lineId+'/wagers').push(wager);
+    } else {
+      if(!allSeasons[currentYear]) allSeasons[currentYear] = {};
+      if(!allSeasons[currentYear].lines) allSeasons[currentYear].lines = {};
+      if(!allSeasons[currentYear].lines[lineId].wagers) allSeasons[currentYear].lines[lineId].wagers = {};
+      allSeasons[currentYear].lines[lineId].wagers[uid()] = wager;
+      renderLines();
+    }
+  }
+
+  function settleLine(lineId, outcome){
+    const linesObj = lines();
+    const l = linesObj[lineId];
+    if(!l) return;
+    const wagers = l.wagers || {};
+    const updatedWagers = {};
+    Object.keys(wagers).forEach(wid=>{
+      const w = wagers[wid];
+      const won = w.side === outcome;
+      const payout = won ? payoutFor(Number(w.amount), Number(w.oddsAtBet)) : 0;
+      updatedWagers[wid] = Object.assign({}, w, {result: won ? 'win' : 'lose', payout});
+    });
+    const updates = {status:'settled', outcome, wagers: updatedWagers};
+    if(liveReady){
+      db.ref('seasons/'+currentYear+'/lines/'+lineId).update(updates);
+    } else {
+      Object.assign(allSeasons[currentYear].lines[lineId], updates);
+      renderLines();
+    }
+  }
+
+  document.getElementById('lines-list').addEventListener('click', e=>{
+    const oddsBtn = e.target.closest('.line-odds-btn');
+    const settleBtn = e.target.closest('.line-settle-btn');
+    if(oddsBtn && !oddsBtn.disabled){
+      placeWager(oddsBtn.dataset.id, oddsBtn.dataset.side);
+      return;
+    }
+    if(settleBtn){
+      const outcome = settleBtn.dataset.outcome;
+      if(!confirm('Settle this line — ' + (outcome==='yes'?'Yes':'No') + ' won? This locks it in and pays out every bet.')) return;
+      settleLine(settleBtn.dataset.id, outcome);
+    }
+  });
+
+  const lineModal = document.getElementById('line-modal');
+  document.getElementById('new-line-btn').addEventListener('click', ()=>{
+    document.getElementById('line-question').value = '';
+    document.getElementById('line-odds-yes').value = '';
+    document.getElementById('line-odds-no').value = '';
+    document.getElementById('line-error').style.display = 'none';
+    lineModal.classList.add('show');
+  });
+  document.getElementById('line-close-btn').addEventListener('click', ()=> lineModal.classList.remove('show'));
+  document.getElementById('lines-signin-btn')?.addEventListener('click', ()=>{ authMode='signin'; syncAuthModeUI(); openAuthModal(); });
+  document.getElementById('line-save-btn').addEventListener('click', ()=>{
+    if(!currentUser) return;
+    const errEl = document.getElementById('line-error');
+    errEl.style.display = 'none';
+    const question = document.getElementById('line-question').value.trim();
+    const oddsYes = parseInt(document.getElementById('line-odds-yes').value.trim(), 10);
+    const oddsNo = parseInt(document.getElementById('line-odds-no').value.trim(), 10);
+    if(!question){ errEl.textContent = 'Enter the line.'; errEl.style.display = 'block'; return; }
+    if(!oddsYes || !oddsNo || Math.abs(oddsYes) < 100 || Math.abs(oddsNo) < 100){
+      errEl.textContent = 'Enter valid American odds for both sides, e.g. +115 or -140.';
+      errEl.style.display = 'block';
+      return;
+    }
+    const line = {
+      question, houseUid: currentUser.uid,
+      houseName: (allUsers[currentUser.uid] && allUsers[currentUser.uid].name) || currentUser.email,
+      oddsYes, oddsNo, status:'open', outcome:null, wagers:{}, ts: Date.now()
+    };
+    if(liveReady){
+      db.ref('seasons/'+currentYear+'/lines').push(line);
+    } else {
+      if(!allSeasons[currentYear]) allSeasons[currentYear] = {};
+      if(!allSeasons[currentYear].lines) allSeasons[currentYear].lines = {};
+      allSeasons[currentYear].lines[uid()] = line;
+      renderLines();
+    }
+    lineModal.classList.remove('show');
+  });
+
   /* ================= ADMIN ================= */
   let adminSelectedUid = null;
   let adminPendingPhoto = '';
@@ -1785,6 +2108,9 @@
       const p = allUsers[adminSelectedUid];
       document.getElementById('admin-form-card').style.display = 'block';
       document.getElementById('admin-form-name').textContent = p.name;
+      const adminRoleVal = p.role === 'cartboy' ? 'cartboy' : 'golfer';
+      const adminRoleInput = document.querySelector(`input[name="admin-role"][value="${adminRoleVal}"]`);
+      if(adminRoleInput) adminRoleInput.checked = true;
       document.getElementById('admin-handicap').value = p.handicap || '';
       document.getElementById('admin-home').value = p.homeCourse || '';
       document.getElementById('admin-emoji').value = p.photoEmoji || '';
@@ -1818,7 +2144,9 @@
   });
   document.getElementById('admin-save-btn').addEventListener('click', ()=>{
     if(!adminSelectedUid) return;
+    const adminRoleChecked = document.querySelector('input[name="admin-role"]:checked');
     const updates = {
+      role: adminRoleChecked ? adminRoleChecked.value : 'golfer',
       handicap: document.getElementById('admin-handicap').value.trim(),
       homeCourse: document.getElementById('admin-home').value.trim(),
       photoEmoji: document.getElementById('admin-emoji').value.trim(),
@@ -1833,6 +2161,7 @@
     } else {
       Object.assign(allUsers[adminSelectedUid], updates);
       renderPlayersTab();
+      renderCartBoys();
     }
   });
 
@@ -1848,15 +2177,19 @@
       if(!isTypingIn('page-scorecards')) renderScorecards();
       renderLeaderboardTab();
       renderPlayersTab();
+      renderCartBoys();
       renderChat();
       renderBets();
+      renderLines();
     });
     db.ref('users').on('value', snap=>{
       allUsers = snap.val() || {};
       renderAuthBox();
       renderPlayersTab();
+      renderCartBoys();
       renderLeaderboardTab();
       renderBets();
+      renderLines();
       renderAdmin();
       if(!isTypingIn('page-scorecards')) renderScorecards();
     });

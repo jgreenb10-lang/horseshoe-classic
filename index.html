@@ -314,6 +314,7 @@
   .player-card{ padding:20px; display:flex; flex-direction:column; gap:10px; }
   .player-top{ display:flex; align-items:center; gap:12px; }
   .player-av{ width:44px; height:44px; border-radius:50%; background:var(--green); color:#fff; display:flex; align-items:center; justify-content:center; font-family:'Playfair Display',serif; font-weight:700; font-size:1.1rem; flex-shrink:0; }
+  .player-av-img{ width:44px; height:44px; border-radius:50%; object-fit:cover; flex-shrink:0; }
   .player-name-h{ font-family:'Playfair Display',serif; font-weight:600; font-size:1.05rem; }
   .player-hcap{ font-family:'IBM Plex Mono',monospace; font-size:0.72rem; color:var(--muted); }
   .player-bio{ font-size:0.85rem; color:var(--muted); line-height:1.5; }
@@ -370,6 +371,11 @@
   .admin-form-card label{ display:block; font-size:0.78rem; font-weight:600; color:var(--muted); margin:14px 0 6px; }
   .admin-form-card input, .admin-form-card textarea{ width:100%; }
   .admin-form-card textarea{ min-height:80px; resize:vertical; }
+  .two-col{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .photo-picker{ display:flex; align-items:center; gap:14px; }
+  .photo-preview{ width:64px; height:64px; border-radius:50%; object-fit:cover; background:var(--cream); border:1px solid var(--line); flex-shrink:0; }
+  .photo-picker-actions{ display:flex; flex-direction:column; gap:6px; }
+  .photo-remove-btn{ background:none; border:none; color:var(--red); font-size:0.76rem; text-decoration:underline; cursor:pointer; padding:0; text-align:left; }
 
   .confetti-piece{ position:fixed; top:-12px; width:9px; height:14px; z-index:200; pointer-events:none; animation:confetti-fall linear forwards; }
   @keyframes confetti-fall{ to{ transform:translateY(105vh) rotate(540deg); opacity:0.9; } }
@@ -464,12 +470,28 @@
     <button class="modal-close" id="profile-close-btn">✕</button>
     <h3>Edit My Profile</h3>
     <p class="hint">This is what shows on your player card.</p>
-    <label for="profile-handicap">Handicap</label>
-    <input type="text" id="profile-handicap" placeholder="14.2">
-    <label for="profile-home">Home course</label>
-    <input type="text" id="profile-home" placeholder="Horseshoe Country Club">
-    <label for="profile-emoji">Avatar initial / emoji</label>
+    <label>Profile picture</label>
+    <div class="photo-picker">
+      <img class="photo-preview" id="profile-photo-preview" alt="">
+      <div class="photo-picker-actions">
+        <input type="file" accept="image/*" id="profile-photo-input">
+        <button type="button" class="photo-remove-btn" id="profile-photo-remove">Remove photo</button>
+      </div>
+    </div>
+    <label for="profile-emoji">Avatar initial / emoji (used if no photo)</label>
     <input type="text" id="profile-emoji" maxlength="2" placeholder="⛳">
+    <div class="two-col">
+      <div><label for="profile-handicap">Handicap</label>
+      <input type="text" id="profile-handicap" placeholder="14.2"></div>
+      <div><label for="profile-home">Home course</label>
+      <input type="text" id="profile-home" placeholder="Horseshoe Country Club"></div>
+    </div>
+    <div class="two-col">
+      <div><label for="profile-height">Height</label>
+      <input type="text" id="profile-height" placeholder="5'11&quot;"></div>
+      <div><label for="profile-weight">Weight</label>
+      <input type="text" id="profile-weight" placeholder="185 lbs"></div>
+    </div>
     <label for="profile-bio">Bio</label>
     <textarea id="profile-bio" placeholder="A few lines about you…"></textarea>
     <label for="profile-fact">Fun fact</label>
@@ -726,12 +748,28 @@
       <ul class="admin-list" id="admin-player-list"></ul>
       <div class="card admin-form-card" id="admin-form-card" style="display:none;">
         <h3 id="admin-form-name" style="margin:0;">Player</h3>
-        <label for="admin-handicap">Handicap</label>
-        <input type="text" id="admin-handicap" placeholder="14.2">
-        <label for="admin-home">Home course</label>
-        <input type="text" id="admin-home" placeholder="Horseshoe Country Club">
-        <label for="admin-emoji">Avatar initial / emoji</label>
+        <label>Profile picture</label>
+        <div class="photo-picker">
+          <img class="photo-preview" id="admin-photo-preview" alt="">
+          <div class="photo-picker-actions">
+            <input type="file" accept="image/*" id="admin-photo-input">
+            <button type="button" class="photo-remove-btn" id="admin-photo-remove">Remove photo</button>
+          </div>
+        </div>
+        <label for="admin-emoji">Avatar initial / emoji (used if no photo)</label>
         <input type="text" id="admin-emoji" maxlength="2" placeholder="⛳">
+        <div class="two-col">
+          <div><label for="admin-handicap">Handicap</label>
+          <input type="text" id="admin-handicap" placeholder="14.2"></div>
+          <div><label for="admin-home">Home course</label>
+          <input type="text" id="admin-home" placeholder="Horseshoe Country Club"></div>
+        </div>
+        <div class="two-col">
+          <div><label for="admin-height">Height</label>
+          <input type="text" id="admin-height" placeholder="5'11&quot;"></div>
+          <div><label for="admin-weight">Weight</label>
+          <input type="text" id="admin-weight" placeholder="185 lbs"></div>
+        </div>
         <label for="admin-bio">Bio</label>
         <textarea id="admin-bio" placeholder="A few lines about this golfer…"></textarea>
         <label for="admin-fact">Fun fact</label>
@@ -803,7 +841,7 @@
   /* ================= STATE ================= */
   let currentYear = String(THIS_YEAR);
   let allSeasons = {};   // { year: { draft, scorecards, chat, bets } }
-  let allUsers = {};     // { uid: { name, email, bio, handicap, homeCourse, funFact, photoEmoji, ratings:{raterUid:1-5} } }
+  let allUsers = {};     // { uid: { name, email, bio, handicap, homeCourse, funFact, height, weight, photoEmoji, photoUrl, ratings:{raterUid:1-5} } }
   let currentUser = null;
   let draftWasComplete = false;
 
@@ -899,7 +937,8 @@
         if(!name){ errEl.textContent = 'Enter your name.'; errEl.style.display='block'; return; }
         const cred = await auth.createUserWithEmailAndPassword(email, password);
         await db.ref('users/'+cred.user.uid).set({
-          name, email, bio:'', handicap:'', homeCourse:'', funFact:'', photoEmoji: name.trim().charAt(0).toUpperCase() || '⛳'
+          name, email, bio:'', handicap:'', homeCourse:'', funFact:'', height:'', weight:'', photoUrl:'',
+          photoEmoji: name.trim().charAt(0).toUpperCase() || '⛳'
         });
       } else {
         await auth.signInWithEmailAndPassword(email, password);
@@ -1479,9 +1518,12 @@
       const ratingCount = Object.keys(p.ratings||{}).length;
       const isMe = currentUser && u === currentUser.uid;
       const myRating = (currentUser && p.ratings && p.ratings[currentUser.uid]) || 0;
+      const avatarHtml = p.photoUrl
+        ? `<img class="player-av-img" src="${esc(p.photoUrl)}" alt="">`
+        : `<div class="player-av">${esc(p.photoEmoji || initial)}</div>`;
       return `<div class="card player-card">
         <div class="player-top">
-          <div class="player-av">${esc(p.photoEmoji || initial)}</div>
+          ${avatarHtml}
           <div>
             <div class="player-name-h">${esc(p.name)}</div>
             ${p.handicap ? `<div class="player-hcap">Handicap ${esc(p.handicap)}</div>` : ''}
@@ -1489,6 +1531,7 @@
         </div>
         ${p.bio ? `<div class="player-bio">${esc(p.bio)}</div>` : ''}
         <div class="player-meta">
+          ${p.height || p.weight ? `<span>📏 ${esc([p.height, p.weight].filter(Boolean).join(' · '))}</span>` : ''}
           ${p.homeCourse ? `<span>🏌️ ${esc(p.homeCourse)}</span>` : ''}
           ${p.funFact ? `<span>✨ ${esc(p.funFact)}</span>` : ''}
         </div>
@@ -1524,28 +1567,71 @@
     }
   });
 
+  /* ================= PHOTO UPLOAD HELPERS ================= */
+  const BLANK_AVATAR = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="#E1DCC9"/></svg>');
+  function resizeImageFile(file, size){
+    return new Promise((resolve, reject)=>{
+      const reader = new FileReader();
+      reader.onload = ()=>{
+        const img = new Image();
+        img.onload = ()=>{
+          const cropSize = Math.min(img.width, img.height);
+          const sx = (img.width - cropSize) / 2, sy = (img.height - cropSize) / 2;
+          const canvas = document.createElement('canvas');
+          canvas.width = size; canvas.height = size;
+          canvas.getContext('2d').drawImage(img, sx, sy, cropSize, cropSize, 0, 0, size, size);
+          resolve(canvas.toDataURL('image/jpeg', 0.78));
+        };
+        img.onerror = reject;
+        img.src = reader.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
   /* ================= EDIT MY PROFILE ================= */
   const profileModal = document.getElementById('profile-modal');
+  let profilePendingPhoto = '';
   function openProfileModal(){
     if(!currentUser) return;
     const p = allUsers[currentUser.uid] || {};
     document.getElementById('profile-handicap').value = p.handicap || '';
     document.getElementById('profile-home').value = p.homeCourse || '';
     document.getElementById('profile-emoji').value = p.photoEmoji || '';
+    document.getElementById('profile-height').value = p.height || '';
+    document.getElementById('profile-weight').value = p.weight || '';
     document.getElementById('profile-bio').value = p.bio || '';
     document.getElementById('profile-fact').value = p.funFact || '';
+    profilePendingPhoto = p.photoUrl || '';
+    document.getElementById('profile-photo-preview').src = profilePendingPhoto || BLANK_AVATAR;
+    document.getElementById('profile-photo-input').value = '';
     profileModal.classList.add('show');
   }
   document.getElementById('edit-profile-btn').addEventListener('click', openProfileModal);
   document.getElementById('profile-close-btn').addEventListener('click', ()=> profileModal.classList.remove('show'));
+  document.getElementById('profile-photo-input').addEventListener('change', async e=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    profilePendingPhoto = await resizeImageFile(file, 220);
+    document.getElementById('profile-photo-preview').src = profilePendingPhoto;
+  });
+  document.getElementById('profile-photo-remove').addEventListener('click', ()=>{
+    profilePendingPhoto = '';
+    document.getElementById('profile-photo-input').value = '';
+    document.getElementById('profile-photo-preview').src = BLANK_AVATAR;
+  });
   document.getElementById('profile-save-btn').addEventListener('click', ()=>{
     if(!currentUser) return;
     const updates = {
       handicap: document.getElementById('profile-handicap').value.trim(),
       homeCourse: document.getElementById('profile-home').value.trim(),
       photoEmoji: document.getElementById('profile-emoji').value.trim(),
+      height: document.getElementById('profile-height').value.trim(),
+      weight: document.getElementById('profile-weight').value.trim(),
       bio: document.getElementById('profile-bio').value.trim(),
       funFact: document.getElementById('profile-fact').value.trim(),
+      photoUrl: profilePendingPhoto,
     };
     if(liveReady){
       db.ref('users/'+currentUser.uid).update(updates);
@@ -1689,6 +1775,7 @@
 
   /* ================= ADMIN ================= */
   let adminSelectedUid = null;
+  let adminPendingPhoto = '';
   function renderAdmin(){
     const listEl = document.getElementById('admin-player-list');
     listEl.innerHTML = Object.keys(allUsers).map(u=>`
@@ -1701,8 +1788,13 @@
       document.getElementById('admin-handicap').value = p.handicap || '';
       document.getElementById('admin-home').value = p.homeCourse || '';
       document.getElementById('admin-emoji').value = p.photoEmoji || '';
+      document.getElementById('admin-height').value = p.height || '';
+      document.getElementById('admin-weight').value = p.weight || '';
       document.getElementById('admin-bio').value = p.bio || '';
       document.getElementById('admin-fact').value = p.funFact || '';
+      adminPendingPhoto = p.photoUrl || '';
+      document.getElementById('admin-photo-preview').src = adminPendingPhoto || BLANK_AVATAR;
+      document.getElementById('admin-photo-input').value = '';
     } else {
       document.getElementById('admin-form-card').style.display = 'none';
     }
@@ -1713,14 +1805,28 @@
     adminSelectedUid = btn.dataset.uid;
     renderAdmin();
   });
+  document.getElementById('admin-photo-input').addEventListener('change', async e=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    adminPendingPhoto = await resizeImageFile(file, 220);
+    document.getElementById('admin-photo-preview').src = adminPendingPhoto;
+  });
+  document.getElementById('admin-photo-remove').addEventListener('click', ()=>{
+    adminPendingPhoto = '';
+    document.getElementById('admin-photo-input').value = '';
+    document.getElementById('admin-photo-preview').src = BLANK_AVATAR;
+  });
   document.getElementById('admin-save-btn').addEventListener('click', ()=>{
     if(!adminSelectedUid) return;
     const updates = {
       handicap: document.getElementById('admin-handicap').value.trim(),
       homeCourse: document.getElementById('admin-home').value.trim(),
       photoEmoji: document.getElementById('admin-emoji').value.trim(),
+      height: document.getElementById('admin-height').value.trim(),
+      weight: document.getElementById('admin-weight').value.trim(),
       bio: document.getElementById('admin-bio').value.trim(),
       funFact: document.getElementById('admin-fact').value.trim(),
+      photoUrl: adminPendingPhoto,
     };
     if(liveReady){
       db.ref('users/'+adminSelectedUid).update(updates);
